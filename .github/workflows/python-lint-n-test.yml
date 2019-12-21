@@ -1,9 +1,6 @@
 name: Python linting and testing
 
-on:
-  push:
-    tags:
-    - '*'
+on: [push]
 
 jobs:
   build:
