@@ -27,6 +27,12 @@ if __name__ == "__main__":
         url="https://github.com/wqferr/re-view",
         packages=find_packages(),
         long_description=_read("README.md"),
-        # TODO add more classifiers
-        classifiers=["Development Status :: 3 - Alpha", "Topic :: Utilities"],
+        classifiers=[
+            "Development Status :: 3 - Alpha",
+            "Topic :: Utilities",
+            "Intended Audience :: Developers",
+            "License :: OSI Approved :: GNU General Public License v3 (GPLv3)",
+            "Programming Language :: Python :: 3 :: Only",
+        ],
+        install_requires=["prompt_toolkit>=3.0.2"],
     )
