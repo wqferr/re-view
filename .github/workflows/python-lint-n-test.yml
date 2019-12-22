@@ -26,18 +26,19 @@ jobs:
     - name: Lint with flake8
       run: |
         pip install flake8
-        # stop the build if there are Python syntax errors or undefined names
-        flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
-        # real check
-        flake8 . --count --max-complexity=10 --statistics
+        flake8 --count --max-complexity=10 --statistics review
     - name: Lint with isort
       run: |
         pip install isort
-        isort .
+        isort --check-only --recursive review
+    - name: Lint with pydocstyle
+      run: |
+        pip install pydocstyle
+        pydocstyle review
     - name: Lint with black
       run: |
         pip install black
-        black --check .
+        black --check review
     - name: Test with pytest
       run: |
         pip install pytest
