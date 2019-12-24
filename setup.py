@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 """Install minimal requirements."""
 import os
 
@@ -34,5 +35,5 @@ if __name__ == "__main__":
             "License :: OSI Approved :: GNU General Public License v3 (GPLv3)",
             "Programming Language :: Python :: 3 :: Only",
         ],
-        install_requires=["prompt_toolkit>=3.0.2"],
+        install_requires=["blessed>=1.16"],
     )
