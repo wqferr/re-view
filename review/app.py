@@ -45,6 +45,12 @@ class Application:
         self.regex_cursor += delta
         self.regex_cursor = max(0, min(len(self.regex), self.regex_cursor))
 
+    def _add_char(self, char):
+        regex_start = self.regex[: self.regex_cursor]
+        regex_end = self.regex[self.regex_cursor :]
+        self.regex = regex_start + char + regex_end
+        self._move_regex_cursor(+1)
+
     def _erase_char(self):
         if self.regex_cursor == 0:
             # Cursor at start, do nothing
@@ -71,8 +77,7 @@ class Application:
             if key == KEY_CLEAR_SCREEN:
                 echo(self.term.clear)
             elif key.isprintable():
-                self.regex = self.regex + key
-                self._move_regex_cursor(+1)
+                self._add_char(str(key))
 
     def _highlight_match(self, m):
         matched_text = m.group(0)
