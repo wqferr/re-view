@@ -1,11 +1,11 @@
 """TUI tool to visualize regular expressions in real time."""
 import re
-from sys import stdin
+from sys import argv, stdin
 
 from blessed import Terminal
 from lorem.text import TextLorem
 
-RAW_LOREM = TextLorem(prange=(2, 2), psep="").text()
+RAW_LOREM = TextLorem(prange=(2, 2)).text()
 # WRAPPED_LOREM = re.sub(r"", r"\1\n", RAW_LOREM)
 
 
@@ -23,9 +23,12 @@ def main():
 
     with term.fullscreen(), term.cbreak():
         while True:
-            echo(term.move_y(term.height // 2))
-            for line in term.wrap(RAW_LOREM, width=80):
-                print(re.sub(r"(i[^it]+t)", _highlight_match, line))
+            print(term.move(term.height // 2), 0)
+            highlighted_lorem = re.sub(
+                argv[1], _highlight_match, RAW_LOREM, flags=re.DOTALL
+            )
+            for line in term.wrap(highlighted_lorem, width=20):
+                print(line)
             key = stdin.read(1)
             if key == "q":
                 break
