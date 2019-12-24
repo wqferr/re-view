@@ -5,9 +5,7 @@ from sys import argv
 from blessed import Terminal
 from lorem.text import TextLorem
 
-# RAW_LOREM = TextLorem(trange=(2, 3), prange=(2, 3), srange=(6, 6)).text()
 RAW_LOREM = TextLorem().text()
-# WRAPPED_LOREM = re.sub(r"", r"\1\n", RAW_LOREM)
 
 
 def echo(*args):
@@ -26,10 +24,6 @@ def _get_highlighted_text(text, regex, highlight_function):
         return highlighted_text
 
 
-def _draw_text(text, regex):
-    ...
-
-
 def main():
     """Fooling around."""
     term = Terminal()
@@ -45,12 +39,13 @@ def main():
             cur_regex = ""
 
         while True:
-            echo(term.clear)
             highlighted_lorem = _get_highlighted_text(
                 RAW_LOREM, cur_regex, _highlight_match
             )
 
-            wrapped = term.wrap(highlighted_lorem, width=term.width - 2 * margin)
+            wrapped = term.wrap(
+                highlighted_lorem, width=term.width - 2 * margin, subsequent_indent=" "
+            )
             echo(term.move_y((term.height - len(wrapped)) // 2))
             for line in wrapped:
                 echo(term.move_x(margin))
@@ -58,13 +53,16 @@ def main():
 
             echo(term.move_y(term.height - 1))
             echo(cur_regex)
-            key = term.inkey()
+            echo(term.clear_eol)
+            try:
+                key = term.inkey()
+            except KeyboardInterrupt:
+                break
             if key.is_sequence:
                 if key.name == "KEY_DELETE":
                     cur_regex = cur_regex[:-1]
             elif key.isascii:
                 cur_regex = cur_regex + key
-    print("GOT ", key, ord(key), key.is_sequence, str(key), key.name)
 
 
 if __name__ == "__main__":
