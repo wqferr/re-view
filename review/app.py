@@ -39,7 +39,7 @@ def main():
                         cur_regex, _highlight_match, RAW_LOREM, flags=re.DOTALL
                     )
                     # highlighted_lorem = RAW_LOREM
-                except:
+                except re.error:
                     invalid_regex = True
             else:
                 invalid_regex = True
