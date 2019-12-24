@@ -1,3 +1,4 @@
+"""TUI tool to visualize regular expressions in real time."""
 import re
 from sys import stdin
 
