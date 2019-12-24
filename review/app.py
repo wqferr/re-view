@@ -24,6 +24,20 @@ def _get_highlighted_text(text, regex, highlight_function):
         return highlighted_text
 
 
+def _process_key(term, cur_regex):
+    key = term.inkey()
+
+    if key.is_sequence:
+        if key.name == "KEY_DELETE":
+            cur_regex = cur_regex[:-1]
+    elif key.isascii:
+        if key == "\x0c":
+            print(term.clear)
+        else:
+            cur_regex = cur_regex + key
+    return cur_regex
+
+
 def main():
     """Fooling around."""
     term = Terminal()
@@ -32,19 +46,19 @@ def main():
     def _highlight_match(m):
         return term.bold(term.underline(m.group(0)))
 
-    with term.fullscreen(), term.cbreak():
-        if len(argv) > 1:
-            cur_regex = argv[1]
-        else:
-            cur_regex = ""
+    if len(argv) > 1:
+        cur_regex = argv[1]
+    else:
+        cur_regex = ""
 
+    with term.fullscreen(), term.cbreak():
         while True:
             highlighted_lorem = _get_highlighted_text(
                 RAW_LOREM, cur_regex, _highlight_match
             )
 
             wrapped = term.wrap(
-                highlighted_lorem, width=term.width - 2 * margin, subsequent_indent=" "
+                highlighted_lorem, width=term.width - 2 * margin, subsequent_indent="> "
             )
             echo(term.move_y((term.height - len(wrapped)) // 2))
             for line in wrapped:
@@ -52,17 +66,12 @@ def main():
                 print(line)
 
             echo(term.move_y(term.height - 1))
-            echo(cur_regex)
-            echo(term.clear_eol)
+            echo(cur_regex + term.clear_eol)
+
             try:
-                key = term.inkey()
+                cur_regex = _process_key(term, cur_regex)
             except KeyboardInterrupt:
                 break
-            if key.is_sequence:
-                if key.name == "KEY_DELETE":
-                    cur_regex = cur_regex[:-1]
-            elif key.isascii:
-                cur_regex = cur_regex + key
 
 
 if __name__ == "__main__":
