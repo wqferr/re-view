@@ -1,6 +1,6 @@
 """TUI tool to visualize regular expressions in real time."""
 import re
-from sys import argv, stdin
+from sys import argv
 
 from blessed import Terminal
 from lorem.text import TextLorem
@@ -13,6 +13,21 @@ RAW_LOREM = TextLorem().text()
 def echo(*args):
     """Print with no newline and flush immediately."""
     print(*args, end="", flush=True)
+
+
+def _get_highlighted_text(text, regex, highlight_function):
+    if not regex:
+        return text
+    try:
+        highlighted_text = re.sub(regex, highlight_function, text)
+    except re.error:
+        return text
+    else:
+        return highlighted_text
+
+
+def _draw_text(text, regex):
+    ...
 
 
 def main():
@@ -31,21 +46,9 @@ def main():
 
         while True:
             echo(term.clear)
-            echo(term.move_y(term.height // 2))
-            invalid_regex = False
-            if cur_regex:
-                try:
-                    highlighted_lorem = re.sub(
-                        cur_regex, _highlight_match, RAW_LOREM, flags=re.DOTALL
-                    )
-                    # highlighted_lorem = RAW_LOREM
-                except re.error:
-                    invalid_regex = True
-            else:
-                invalid_regex = True
-
-            if invalid_regex:
-                highlighted_lorem = RAW_LOREM
+            highlighted_lorem = _get_highlighted_text(
+                RAW_LOREM, cur_regex, _highlight_match
+            )
 
             wrapped = term.wrap(highlighted_lorem, width=term.width - 2 * margin)
             echo(term.move_y((term.height - len(wrapped)) // 2))
