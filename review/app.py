@@ -5,6 +5,9 @@ from blessed import Terminal
 from lorem.text import TextLorem
 
 LOREM_GENERATOR = TextLorem()
+KEY_CLEAR_SCREEN = "\x0c"
+KEY_LEFT = "\x1bOC"
+KEY_RIGHT = "\x1bOD"
 
 
 def echo(*args):
@@ -23,6 +26,7 @@ class Application:
         self.term = Terminal()
         self.margin = margin
         self.regex = initial_regex
+        self.regex_cursor = len(self.regex)
         if text is None:
             self.text = LOREM_GENERATOR.text()
         else:
@@ -37,17 +41,38 @@ class Application:
         except re.error:
             return self.text
 
+    def _move_regex_cursor(self, delta):
+        self.regex_cursor += delta
+        self.regex_cursor = max(0, min(len(self.regex), self.regex_cursor))
+
+    def _erase_char(self):
+        if self.regex_cursor == 0:
+            # Cursor at start, do nothing
+            return
+
+        new_start = self.regex[: self.regex_cursor - 1]
+        new_end = self.regex[(self.regex_cursor) :]
+
+        self.regex = new_start + new_end
+        self._move_regex_cursor(-1)
+
     def _process_key(self):
         key = self.term.inkey()
 
         if key.is_sequence:
             if key.name == "KEY_DELETE":
-                self.regex = self.regex[:-1]
+                # self.regex = self.regex[:-1]
+                self._erase_char()
+            elif key.name == "KEY_LEFT":
+                self._move_regex_cursor(-1)
+            elif key.name == "KEY_RIGHT":
+                self._move_regex_cursor(+1)
         elif key.isascii:
-            if key == "\x0c":
+            if key == KEY_CLEAR_SCREEN:
                 echo(self.term.clear)
             elif key.isprintable():
                 self.regex = self.regex + key
+                self._move_regex_cursor(+1)
 
     def _highlight_match(self, m):
         matched_text = m.group(0)
@@ -57,9 +82,9 @@ class Application:
             return self.term.bold_underline_reverse(matched_text)
 
     def _move(self, x=None, y=None):
-        if x:
+        if x is not None:
             echo(self.term.move_x(x))
-        if y:
+        if y is not None:
             echo(self.term.move_y(y))
 
     def _print_text(self):
@@ -77,6 +102,7 @@ class Application:
     def _print_regex(self):
         self._move(y=self.term.height - 1)
         echo(self.regex + self.term.clear_eol)
+        self._move(x=self.regex_cursor)
 
     def _main_loop(self):
         while True:
