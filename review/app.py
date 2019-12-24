@@ -46,9 +46,8 @@ class Application:
         elif key.isascii:
             if key == "\x0c":
                 echo(self.term.clear)
-            else:
+            elif key.isprintable():
                 self.regex = self.regex + key
-        return self.regex
 
     def _highlight_match(self, m):
         matched_text = m.group(0)
@@ -79,6 +78,12 @@ class Application:
         self._move(y=self.term.height - 1)
         echo(self.regex + self.term.clear_eol)
 
+    def _main_loop(self):
+        while True:
+            self._print_text()
+            self._print_regex()
+            self._process_key()
+
     def run(self):
         """Start fullscreen application.
 
@@ -86,14 +91,10 @@ class Application:
         """
         # FIXME
         with self.term.fullscreen(), self.term.cbreak():
-            while True:
-                self._print_text()
-                self._print_regex()
-
-                try:
-                    self._process_key()
-                except KeyboardInterrupt:
-                    break
+            try:
+                self._main_loop()
+            except KeyboardInterrupt:
+                pass
 
 
 def main():
