@@ -27,6 +27,7 @@ if __name__ == "__main__":
         keywords="regex visualization tool debug",
         url="https://github.com/wqferr/re-view",
         packages=find_packages(),
+        entry_points={"console_scripts": ["review=review.app:main"]},
         long_description=_read("README.md"),
         classifiers=[
             "Development Status :: 3 - Alpha",
