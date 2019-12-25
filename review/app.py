@@ -270,12 +270,8 @@ def main():
     parser.add_argument(
         "text_file", type=str, nargs="?", default="",
     )
-    parser.add_argument(
-        "--version", "-v", dest="show_version", action="store_true", default=False
-    )
-    parser.add_argument(
-        "--help", "-h", dest="show_help", action="store_true", default=False
-    )
+    parser.add_argument("--version", "-v", dest="show_version", action="store_true")
+    parser.add_argument("--help", "-h", dest="show_help", action="store_true")
     args = parser.parse_args()
     if args.show_help:
         print(__doc__)
