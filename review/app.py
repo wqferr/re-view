@@ -211,7 +211,9 @@ class Application:
 
     def _print_regex(self):
         self._move(y=self.term.height - 2)
-        echo(self.term.red(self.error_msg), self.term.clear_eol, "\n")
+        echo(
+            self.term.black_on_red(self.error_msg), self.term.clear_eol, "\n",
+        )
         echo(self.regex, "  ")
         echo(self.term.bright_black(self._get_active_flags_str()))
         echo(self.term.clear_eol)
