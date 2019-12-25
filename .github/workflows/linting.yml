@@ -10,9 +10,9 @@ jobs:
   build:
     runs-on: ubuntu-latest
     strategy:
-      max-parallel: 2
+      max-parallel: 3
       matrix:
-        python-version: [3.6, 3.7]
+        python-version: [3.6, 3.7, 3.8]
 
     steps:
     - uses: actions/checkout@v1
@@ -40,7 +40,3 @@ jobs:
       run: |
         pip install black
         black --check review
-    - name: Test with pytest
-      run: |
-        pip install pytest
-        pytest

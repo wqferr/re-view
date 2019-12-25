@@ -3,6 +3,7 @@ import re
 from argparse import ArgumentParser
 from functools import reduce
 from operator import or_ as bitwise_or
+from sys import stdin
 
 from blessed import Terminal
 from lorem.text import TextLorem
@@ -58,7 +59,7 @@ class Application:
                 pass
         print(self.term.width * "-")
         print(self.regex)
-        print("Flags:", self.flags)
+        print("Flags:", self.flags or "none")
 
     def _get_highlighted_text(self):
         if not self.regex:
@@ -193,7 +194,7 @@ class Application:
             if self.flags & getattr(re, letter.upper()) > 0
         ]
         echo(
-            f"Current flags: {''.join(current_flag_letters) or None}",
+            f"Current flags: {''.join(current_flag_letters) or 'none'}",
             self.term.clear_eol,
         )
 
@@ -217,7 +218,9 @@ class Application:
         self._cleanup_flag_prompt()
 
 
-def _read_file(filename):
+def _read_text(filename):
+    if filename == "-":
+        stdin.read()
     try:
         with open(filename, "rt") as file:
             return file.read()
@@ -247,7 +250,7 @@ def main():
     app = Application(
         initial_regex=args.initial_regex,
         initial_flags=initial_flags,
-        text=_read_file(args.text_file),
+        text=_read_text(args.text_file),
     )
     app.run()
 
