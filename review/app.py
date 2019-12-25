@@ -1,13 +1,12 @@
 """TUI tool to visualize regular expressions in real time."""
 import re
+from argparse import ArgumentParser
 
 from blessed import Terminal
 from lorem.text import TextLorem
 
 LOREM_GENERATOR = TextLorem()
 KEY_CLEAR_SCREEN = "\x0c"
-KEY_LEFT = "\x1bOC"
-KEY_RIGHT = "\x1bOD"
 
 
 def echo(*args):
@@ -27,6 +26,7 @@ class Application:
         self.margin = margin
         self.regex = initial_regex
         self.regex_cursor = len(self.regex)
+        self.halt = False
         if text is None:
             self.text = LOREM_GENERATOR.text()
         else:
@@ -66,18 +66,29 @@ class Application:
         key = self.term.inkey()
 
         if key.is_sequence:
-            if key.name == "KEY_DELETE":
-                # self.regex = self.regex[:-1]
-                self._erase_char()
-            elif key.name == "KEY_LEFT":
-                self._move_regex_cursor(-1)
-            elif key.name == "KEY_RIGHT":
-                self._move_regex_cursor(+1)
+            self._process_sequence_key(key)
         elif key.isascii:
-            if key == KEY_CLEAR_SCREEN:
-                echo(self.term.clear)
-            elif key.isprintable():
-                self._add_char(str(key))
+            self._process_typed_key(key)
+
+    def _process_sequence_key(self, sequence):
+        if sequence.name == "KEY_DELETE":
+            self._erase_char()
+        elif sequence.name == "KEY_LEFT":
+            self._move_regex_cursor(-1)
+        elif sequence.name == "KEY_RIGHT":
+            self._move_regex_cursor(+1)
+        elif sequence.name == "KEY_ENTER":
+            self.halt = True
+        elif sequence.name == "KEY_FIND":
+            self.regex_cursor = 0
+        elif sequence.name == "KEY_SELECT":
+            self.regex_cursor = len(self.regex)
+
+    def _process_typed_key(self, key):
+        if key == KEY_CLEAR_SCREEN:
+            echo(self.term.clear)
+        elif key.isprintable():
+            self._add_char(str(key))
 
     def _highlight_match(self, m):
         matched_text = m.group(0)
@@ -103,6 +114,7 @@ class Application:
         for line in wrapped:
             self._move(x=self.margin)
             echo(line + "\n")
+        echo(self.term.normal)
 
     def _print_regex(self):
         self._move(y=self.term.height - 1)
@@ -110,7 +122,7 @@ class Application:
         self._move(x=self.regex_cursor)
 
     def _main_loop(self):
-        while True:
+        while not self.halt:
             self._print_text()
             self._print_regex()
             self._process_key()
@@ -126,11 +138,35 @@ class Application:
                 self._main_loop()
             except KeyboardInterrupt:
                 pass
+        print(self.regex)
+
+
+def _read_file(filename):
+    with open(filename, "rt") as file:
+        return file.read()
 
 
 def main():
     """Fooling around."""
-    app = Application()
+    parser = ArgumentParser()
+    parser.add_argument(
+        "--text-file",
+        "-f",
+        dest="text_file",
+        type=str,
+        help="text file to use as test cases",
+    )
+    parser.add_argument(
+        "--initial-regex",
+        "-r",
+        dest="initial_regex",
+        type=str,
+        help="initial regex",
+        default="",
+    )
+    args = parser.parse_args()
+
+    app = Application(initial_regex=args.initial_regex, text=_read_file(args.text_file))
     app.run()
 
 
