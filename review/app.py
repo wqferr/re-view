@@ -75,6 +75,7 @@ class Application:
         self.regex_cursor = len(self.regex)
         self.halt = False
         self.mode = "regex"
+        self.show_ctrl_f_prompt = True
         self.flags = initial_flags
         self.error_msg = ""
         if text is None:
@@ -173,7 +174,7 @@ class Application:
         if key == KEY_CLEAR_SCREEN:
             echo(self.term.clear)
         elif key == KEY_FLAG_MODE:
-            self.mode = "flag"
+            self._enter_flag_mode()
         elif key.isprintable():
             self._add_char(str(key))
 
@@ -214,8 +215,10 @@ class Application:
         echo(
             self.term.black_on_red(self.error_msg), self.term.clear_eol, "\n",
         )
-        echo(self.regex, "  ")
-        echo(self.term.bright_black(self._get_active_flags_str()))
+        echo(self.regex)
+        echo("  ", self.term.bright_black(self._get_active_flags_str()))
+        if self.show_ctrl_f_prompt:
+            echo(self.term.bright_black(" (press CTRL-F to edit flags)"))
         echo(self.term.clear_eol)
         self._move(x=self.regex_cursor)
 
@@ -251,6 +254,10 @@ class Application:
 
     def _disable_flag(self, flag_letter):
         self.flags &= ~_get_flag(flag_letter)
+
+    def _enter_flag_mode(self):
+        self.mode = "flag"
+        self.show_ctrl_f_prompt = False
 
     def _exit_flag_mode(self):
         self.mode = "regex"
