@@ -218,8 +218,11 @@ class Application:
 
 
 def _read_file(filename):
-    with open(filename, "rt") as file:
-        return file.read()
+    try:
+        with open(filename, "rt") as file:
+            return file.read()
+    except FileNotFoundError:
+        return None
 
 
 def main():
@@ -232,7 +235,11 @@ def main():
         "--flags", "-f", dest="initial_flags", help="initial regex flags", default=""
     )
     parser.add_argument(
-        "text_file", type=str, help="text file to use as test cases",
+        "text_file",
+        type=str,
+        help="text file to use as test cases",
+        nargs="?",
+        default="",
     )
     args = parser.parse_args()
 
