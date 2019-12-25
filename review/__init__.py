@@ -1,2 +1,2 @@
 """Terminal based regex visualization tool and debugger."""
-__version__ = "0.7.0"
+from app import __version__  # noqa: F401

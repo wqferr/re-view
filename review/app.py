@@ -1,4 +1,34 @@
-"""TUI tool to visualize regular expressions in real time."""
+"""TUI tool to visualize regular expressions in real time.
+
+Command line usage:
+    review [options] [--] (INPUT_FILE | -)
+
+    --help, -h                  show this help message
+    --regex REGEX, -r REGEX     set starting regex
+    --flags FLAGS, -f FLAGS     set starting flags
+
+    INPUT_FILE is the file to be read and displayed to test the regexes.
+    If - (a single dash) is supplied instead of a filename, the text is
+    read from stdin.
+
+Python regex reference:
+    https://docs.python.org/3/library/re.html
+
+Application usage:
+    The window is divided into two parts:
+    The lower half displays the current regular expression (regex) being tested.
+    The upper half displays text that is highlighted according to the regex typed.
+
+    You may edit the regex by typing on your keyboard.
+    The arrows, home and end keys move the cursor to edit different
+    parts of the regex.
+    The backspace and delete keys both erase the character before the cursor.
+
+    To change the active regex flags, press CTRL-F to enter "flag mode".
+    While in flag mode, the currently active flags are displayed, and you may
+    press any of the given keys to activate or deactivate the corresponding
+    flag.
+"""
 import re
 from argparse import ArgumentParser
 from functools import reduce
@@ -7,6 +37,8 @@ from sys import stdin
 
 from blessed import Terminal
 from lorem.text import TextLorem
+
+__version__ = "0.8.0"
 
 LOREM_GENERATOR = TextLorem()
 KEY_CLEAR_SCREEN = "\x0c"  # CTRL-M (enter/return)
@@ -220,7 +252,7 @@ class Application:
 
 def _read_text(filename):
     if filename == "-":
-        stdin.read()
+        return stdin.read()
     try:
         with open(filename, "rt") as file:
             return file.read()
@@ -230,21 +262,27 @@ def _read_text(filename):
 
 def main():
     """Fooling around."""
-    parser = ArgumentParser()
+    parser = ArgumentParser(add_help=False)
     parser.add_argument(
-        "--regex", "-r", dest="initial_regex", help="initial regex", default="",
+        "--regex", "-r", dest="initial_regex", default="",
+    )
+    parser.add_argument("--flags", "-f", dest="initial_flags", default="")
+    parser.add_argument(
+        "text_file", type=str, nargs="?", default="",
     )
     parser.add_argument(
-        "--flags", "-f", dest="initial_flags", help="initial regex flags", default=""
+        "--version", "-v", dest="show_version", action="store_true", default=False
     )
     parser.add_argument(
-        "text_file",
-        type=str,
-        help="text file to use as test cases",
-        nargs="?",
-        default="",
+        "--help", "-h", dest="show_help", action="store_true", default=False
     )
     args = parser.parse_args()
+    if args.show_help:
+        print(__doc__)
+        return
+    if args.show_version:
+        print("RE-view version", __version__)
+        return
 
     initial_flags = reduce(bitwise_or, map(_get_flag, args.initial_flags), 0)
     app = Application(
