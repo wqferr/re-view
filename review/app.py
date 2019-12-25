@@ -38,7 +38,7 @@ from sys import stdin
 from blessed import Terminal
 from lorem.text import TextLorem
 
-__version__ = "0.8.0"
+from review import __version__
 
 LOREM_GENERATOR = TextLorem()
 KEY_CLEAR_SCREEN = "\x0c"  # CTRL-M (enter/return)
