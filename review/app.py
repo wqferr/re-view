@@ -66,23 +66,29 @@ class Application:
         key = self.term.inkey()
 
         if key.is_sequence:
-            if key.name == "KEY_DELETE":
-                self._erase_char()
-            elif key.name == "KEY_LEFT":
-                self._move_regex_cursor(-1)
-            elif key.name == "KEY_RIGHT":
-                self._move_regex_cursor(+1)
-            elif key.name == "KEY_ENTER":
-                self.halt = True
-            elif key.name == "KEY_FIND":
-                self.regex_cursor = 0
-            elif key.name == "KEY_SELECT":
-                self.regex_cursor = len(self.regex)
+            self._process_sequence_key(key)
         elif key.isascii:
-            if key == KEY_CLEAR_SCREEN:
-                echo(self.term.clear)
-            elif key.isprintable():
-                self._add_char(str(key))
+            self._process_typed_key(key)
+
+    def _process_sequence_key(self, sequence):
+        if sequence.name == "KEY_DELETE":
+            self._erase_char()
+        elif sequence.name == "KEY_LEFT":
+            self._move_regex_cursor(-1)
+        elif sequence.name == "KEY_RIGHT":
+            self._move_regex_cursor(+1)
+        elif sequence.name == "KEY_ENTER":
+            self.halt = True
+        elif sequence.name == "KEY_FIND":
+            self.regex_cursor = 0
+        elif sequence.name == "KEY_SELECT":
+            self.regex_cursor = len(self.regex)
+
+    def _process_typed_key(self, key):
+        if key == KEY_CLEAR_SCREEN:
+            echo(self.term.clear)
+        elif key.isprintable():
+            self._add_char(str(key))
 
     def _highlight_match(self, m):
         matched_text = m.group(0)
