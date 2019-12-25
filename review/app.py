@@ -76,6 +76,7 @@ class Application:
         self.halt = False
         self.mode = "regex"
         self.flags = initial_flags
+        self.error_msg = ""
         if text is None:
             self.text = LOREM_GENERATOR.text()
         else:
@@ -97,12 +98,14 @@ class Application:
         print("Flags:", self._get_active_flags_str())
 
     def _get_highlighted_text(self):
+        self.error_msg = ""
         if not self.regex:
             return self.text
 
         try:
             return re.sub(self.regex, self._highlight_match, self.text, flags=self.flags)
-        except re.error:
+        except re.error as err:
+            self.error_msg = err.msg
             return self.text
 
     def _move_regex_cursor(self, delta):
@@ -207,7 +210,8 @@ class Application:
             self._print_regex()
 
     def _print_regex(self):
-        self._move(y=self.term.height - 1)
+        self._move(y=self.term.height - 2)
+        echo(self.term.red(self.error_msg), self.term.clear_eol, "\n")
         echo(self.regex, "  ")
         echo(self.term.bright_black(self._get_active_flags_str()))
         echo(self.term.clear_eol)
