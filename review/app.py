@@ -28,6 +28,9 @@ Application usage:
     While in flag mode, the currently active flags are displayed, and you may
     press any of the given keys to activate or deactivate the corresponding
     flag.
+
+    If you enable a flag that is incompatible with any others, these others
+    will be disabled and the new one will take place.
 """
 import re
 from argparse import ArgumentParser
@@ -43,7 +46,7 @@ from review import __version__
 LOREM_GENERATOR = TextLorem()
 KEY_CLEAR_SCREEN = "\x0c"  # CTRL-M (enter/return)
 KEY_FLAG_MODE = "\x06"  # CTRL-F
-VALID_FLAGS = {"i", "m", "s", "u", "l", "x"}
+VALID_FLAGS = {"I", "M", "S", "U", "A", "X"}
 
 
 def echo(*args):
@@ -55,9 +58,10 @@ def echo(*args):
 
 
 def _get_flag(flag_letter):
-    if flag_letter.lower() not in VALID_FLAGS:
+    flag_letter = flag_letter.upper()
+    if flag_letter not in VALID_FLAGS:
         raise ValueError("Invalid flag: {flag_letter}")
-    return getattr(re, flag_letter.upper())
+    return getattr(re, flag_letter)
 
 
 class Application:
@@ -72,7 +76,7 @@ class Application:
         self.halt = False
         self.mode = "regex"
         self.flags = initial_flags
-        self.last_flag_toggled = None
+        self.error_msg = ""
         if text is None:
             self.text = LOREM_GENERATOR.text()
         else:
@@ -91,24 +95,18 @@ class Application:
                 pass
         print(self.term.width * "-")
         print(self.regex)
-        print("Flags:", self.flags or "none")
+        print("Flags:", self._get_active_flags_str())
 
     def _get_highlighted_text(self):
+        self.error_msg = ""
         if not self.regex:
             return self.text
 
         try:
             return re.sub(self.regex, self._highlight_match, self.text, flags=self.flags)
-        except re.error:
+        except re.error as err:
+            self.error_msg = err.msg
             return self.text
-        except ValueError:
-            # Invalid flag
-            if self.last_flag_toggled is not None:
-                self._toggle_flag(self.last_flag_toggled)
-                self.last_flag_toggled = None
-                return self._get_highlighted_text()
-            else:
-                raise
 
     def _move_regex_cursor(self, delta):
         self.regex_cursor += delta
@@ -202,7 +200,7 @@ class Application:
         self._move(y=(self.term.height - len(wrapped)) // 2)
         for line in wrapped:
             self._move(x=self.margin)
-            echo(line + "\n")
+            echo(line, "\n")
         echo(self.term.normal)
 
     def _print_prompt(self):
@@ -212,28 +210,31 @@ class Application:
             self._print_regex()
 
     def _print_regex(self):
-        self._move(y=self.term.height - 1)
-        echo(self.regex + self.term.clear_eol)
+        self._move(y=self.term.height - 2)
+        echo(
+            self.term.black_on_red(self.error_msg), self.term.clear_eol, "\n",
+        )
+        echo(self.regex, "  ")
+        echo(self.term.bright_black(self._get_active_flags_str()))
+        echo(self.term.clear_eol)
         self._move(x=self.regex_cursor)
 
     def _print_flags(self):
         self._move(x=0, y=self.term.height - 3)
         print("[FLAG]")
         print(f"Press any of {''.join(VALID_FLAGS)} to toggle flags, or ESC to cancel")
-        current_flag_letters = [
-            letter
-            for letter in VALID_FLAGS
-            if self.flags & getattr(re, letter.upper()) > 0
-        ]
         echo(
-            f"Current flags: {''.join(current_flag_letters) or 'none'}",
-            self.term.clear_eol,
+            f"Current flags: {self._get_active_flags_str()}", self.term.clear_eol,
         )
+
+    def _get_active_flags_str(self):
+        current_flag_letters = [
+            letter for letter in VALID_FLAGS if self.flags & getattr(re, letter) > 0
+        ]
+        return "".join(current_flag_letters) or "no flags"
 
     def _cleanup_flag_prompt(self):
         echo(self.term.clear)
-        # self._move(x=0, y=self.term.height - 3)
-        # print((self.term.clear_eol + "\n") * 3)
 
     def _main_loop(self):
         while not self.halt:
@@ -242,8 +243,14 @@ class Application:
             self._process_key()
 
     def _toggle_flag(self, flag_letter):
+        if flag_letter.upper() == "U":
+            self._disable_flag("A")
+        elif flag_letter.upper() == "A":
+            self._disable_flag("U")
         self.flags ^= _get_flag(flag_letter)
-        self.last_flag_toggled = flag_letter
+
+    def _disable_flag(self, flag_letter):
+        self.flags &= ~_get_flag(flag_letter)
 
     def _exit_flag_mode(self):
         self.mode = "regex"
