@@ -44,7 +44,7 @@ import re
 from argparse import ArgumentParser
 from functools import reduce
 from operator import or_ as bitwise_or
-from sys import stdin
+from sys import stderr, stdin
 
 from blessed import Terminal
 from lorem.text import TextLorem
@@ -127,16 +127,25 @@ class Application:
         self.regex = regex_start + char + regex_end
         self._move_regex_cursor(+1)
 
-    def _erase_char(self):
+    def _erase_char_behind(self):
         if self.regex_cursor == 0:
             # Cursor at start, do nothing
             return
 
         new_start = self.regex[: self.regex_cursor - 1]
-        new_end = self.regex[(self.regex_cursor) :]
+        new_end = self.regex[self.regex_cursor :]
 
         self.regex = new_start + new_end
         self._move_regex_cursor(-1)
+
+    def _erase_char_in_front(self):
+        if self.regex_cursor == len(self.regex):
+            # Cursor at end, do nothing
+            return
+
+        new_start = self.regex[: self.regex_cursor]
+        new_end = self.regex[self.regex_cursor + 1 :]
+        self.regex = new_start + new_end
 
     def _process_key(self):
         key = self.term.inkey()
@@ -165,8 +174,12 @@ class Application:
             self._exit_flag_mode()
 
     def _process_sequence_key(self, sequence):
-        if sequence.name == "KEY_DELETE":
-            self._erase_char()
+        if sequence.name in ("KEY_DELETE", "KEY_BACKSPACE"):
+            # TERMINALS DON'T KNOW HOW TO SEND KEY SIGNALS WTF
+            if ord(sequence[-1]) == 127:  # Actually backspace
+                self._erase_char_behind()
+            else:  # Actually delete
+                self._erase_char_in_front()
         elif sequence.name == "KEY_LEFT":
             self._move_regex_cursor(-1)
         elif sequence.name == "KEY_RIGHT":
