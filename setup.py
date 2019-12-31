@@ -29,6 +29,7 @@ if __name__ == "__main__":
         packages=find_packages(),
         entry_points={"console_scripts": ["review=review.app:main"]},
         long_description=_read("README.md"),
+        long_description_content_type="text/markdown",
         classifiers=[
             "Development Status :: 3 - Alpha",
             "Topic :: Utilities",
