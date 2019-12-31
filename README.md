@@ -10,15 +10,19 @@ review [options] [--] [INPUT_FILE | -]
 --help, -h                      show this help message
 --regex REGEX, -r REGEX         set starting regex
 --flags [FLAGS], -f [FLAGS]     set starting flags, defaults to M
-    If -f or --flags is passed with no arguments, starts program with no active
+    If -f or --flags is passed with no arguments, start program with no active
     flags.
-```
 
 `INPUT_FILE` is the file to be read and displayed to test the regex.
 If - (a single dash) is supplied instead of a filename, the text is
 read from stdin.
 If `INPUT_FILE` is not supplied at all, a randomly generated Lorem-style text
 will be used.
+```
+
+Screenshots
+-----------
+Coming `Soon`™.
 
 Python regex reference
 ----------------------
