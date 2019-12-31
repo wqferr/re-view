@@ -23,6 +23,10 @@ Application usage:
     The lower half displays the current regular expression (regex) being tested.
     The upper half displays text that is highlighted according to the regex typed.
 
+    The text displayed in the upper part may be wrapped.
+    Continuation of long lines start with "> ", and do not match ^, even if the
+    multiline flag is enabled.
+
     You may edit the regex by typing on your keyboard.
     The arrows, home and end keys move the cursor to edit different
     parts of the regex.
