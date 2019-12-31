@@ -1,15 +1,19 @@
 """TUI tool to visualize regular expressions in real time.
 
 Command line usage:
-    review [options] [--] (INPUT_FILE | -)
+    review [options] [--] [INPUT_FILE | -]
 
-    --help, -h                  show this help message
-    --regex REGEX, -r REGEX     set starting regex
-    --flags FLAGS, -f FLAGS     set starting flags
+    --help, -h                      show this help message
+    --regex REGEX, -r REGEX         set starting regex
+    --flags [FLAGS], -f [FLAGS]     set starting flags, defaults to M
+        If -f or --flags is passed with no arguments, starts program with no active
+        flags.
 
-    INPUT_FILE is the file to be read and displayed to test the regexes.
+    INPUT_FILE is the file to be read and displayed to test the regex.
     If - (a single dash) is supplied instead of a filename, the text is
     read from stdin.
+    If INPUT_FILE is not supplied at all, a randomly generated Lorem-style text
+    will be used.
 
 Python regex reference:
     https://docs.python.org/3/library/re.html
@@ -280,7 +284,7 @@ def main():
     parser.add_argument(
         "--regex", "-r", dest="initial_regex", default="",
     )
-    parser.add_argument("--flags", "-f", dest="initial_flags", default="")
+    parser.add_argument("--flags", "-f", dest="initial_flags", default="M", nargs="?")
     parser.add_argument(
         "text_file", type=str, nargs="?", default="",
     )
@@ -294,7 +298,8 @@ def main():
         print("RE-view version", __version__)
         return
 
-    initial_flags = reduce(bitwise_or, map(_get_flag, args.initial_flags), 0)
+    initial_flags = args.initial_flags or ""
+    initial_flags = reduce(bitwise_or, map(_get_flag, initial_flags), 0)
     app = Application(
         initial_regex=args.initial_regex,
         initial_flags=initial_flags,
