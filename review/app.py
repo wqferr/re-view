@@ -44,7 +44,7 @@ import re
 from argparse import ArgumentParser
 from functools import reduce
 from operator import or_ as bitwise_or
-from sys import stderr, stdin
+from sys import stdin
 
 from blessed import Terminal
 from lorem.text import TextLorem
