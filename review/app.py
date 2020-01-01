@@ -261,6 +261,7 @@ class Application:
 
     @property
     def num_text_display_lines(self):
+        """Get number of lines available to show highlighted text."""
         return self.term.height - 3
 
     def _print_prompt(self):
@@ -270,7 +271,7 @@ class Application:
             self._print_regex()
 
     def _print_regex(self):
-        self._move(x=0, y=self.term.height - 2)
+        self._move(x=0, y=self.num_text_display_lines + 1)
         echo(
             self.term.black_on_red(self.error_msg), self.term.clear_eol, "\n",
         )
