@@ -11,6 +11,7 @@ to validate a regex on, and the application shows you where the typed regex will
 
 This example matches all words that begin with any of `a`, `e`, `i`, `o` or `u`.
 Note that it only considers lowercase vowels for this.
+
 ![Usage example](https://raw.githubusercontent.com/wqferr/re-view/images-in-docs/.assets/basic.png)
 
 ### Regex flags
@@ -19,6 +20,7 @@ In this and the following examples, the dim uppercase `I` indicates that
 the case-insensitive flag is active.
 
 This example matches all words that begin with a vowel, be it upper or lowercase.
+
 ![Regex flags in action](https://raw.githubusercontent.com/wqferr/re-view/images-in-docs/.assets/flags.png)
 
 ### Lookahead
@@ -28,6 +30,7 @@ and example of what it *can* do.
 
 This examples matches only words that begin with a vowel (upper or lowercase)
 and that precedes either `.`, `?` or `!`.
+
 ![An example of a lookahead](https://raw.githubusercontent.com/wqferr/re-view/images-in-docs/.assets/lookahead.png)
 
 ### Errors
@@ -35,6 +38,7 @@ If there's an error in the regex, it will warn you in bright red.
 
 This example shows that no highlights are shown, and a bright red message describing
 the error is shown above the regex.
+
 ![An example of a lookahead](https://raw.githubusercontent.com/wqferr/re-view/images-in-docs/.assets/error.png)
 
 ### When you're done editing
@@ -43,6 +47,7 @@ and flags that were active.
 
 This example shows what would happen if you sent `SIGTERM` to the application in the state
 shown by the "Lookahead" example.
+
 ![A look at stdout](https://raw.githubusercontent.com/wqferr/re-view/images-in-docs/.assets/stdout.png)
 
 Command line usage
