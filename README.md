@@ -37,6 +37,8 @@ The window is divided into two parts:
 The text displayed in the upper part may be wrapped.
 Continuation of long lines start with "> ", and do not match `^`, even if the
 multiline flag is enabled.
+If the input text is too large to fit on screen, you may use the up and down
+arrows to scroll the text.
 
 You may edit the regex by typing on your keyboard.
 The arrows, home and end keys move the cursor to edit different

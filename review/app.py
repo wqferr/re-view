@@ -26,6 +26,8 @@ Application usage:
     The text displayed in the upper part may be wrapped.
     Continuation of long lines start with "> ", and do not match ^, even if the
     multiline flag is enabled.
+    If the input text is too large to fit on screen, you may use the up and down
+    arrows to scroll the text.
 
     You may edit the regex by typing on your keyboard.
     The arrows, home and end keys move the cursor to edit different
@@ -81,6 +83,7 @@ class Application:
         self.margin = margin
         self.regex = initial_regex
         self.regex_cursor = len(self.regex)
+        self.start_line = 0
         self.halt = False
         self.mode = "regex"
         self.show_ctrl_f_prompt = True
@@ -90,6 +93,7 @@ class Application:
             self.text = LOREM_GENERATOR.text()
         else:
             self.text = text
+        self.wrapped_text = []
 
     def run(self):
         """Start fullscreen application.
@@ -102,7 +106,6 @@ class Application:
                 self._main_loop()
             except KeyboardInterrupt:
                 pass
-        print(self.term.width * "-")
         print(self.regex)
         print("Flags:", self._get_active_flags_str())
 
@@ -120,6 +123,12 @@ class Application:
     def _move_regex_cursor(self, delta):
         self.regex_cursor += delta
         self.regex_cursor = max(0, min(len(self.regex), self.regex_cursor))
+
+    def _scroll_screen(self, delta):
+        self.start_line += delta
+        self.start_line = max(
+            0, min(len(self.wrapped_text) - self.term.height, self.start_line)
+        )
 
     def _add_char(self, char):
         regex_start = self.regex[: self.regex_cursor]
@@ -184,6 +193,10 @@ class Application:
             self._move_regex_cursor(-1)
         elif sequence.name == "KEY_RIGHT":
             self._move_regex_cursor(+1)
+        elif sequence.name == "KEY_UP":
+            self._scroll_screen(-1)
+        elif sequence.name == "KEY_DOWN":
+            self._scroll_screen(+1)
         elif sequence.name == "KEY_ENTER":
             self.halt = True
         elif sequence.name == "KEY_FIND":
@@ -214,15 +227,18 @@ class Application:
 
     def _print_text(self):
         highlighted_text = self._get_highlighted_text()
-        wrapped = self.term.wrap(
+        self.wrapped_text = self.term.wrap(
             highlighted_text,
             width=self.term.width - 2 * self.margin,
             subsequent_indent="> ",
         )
-        self._move(y=(self.term.height - len(wrapped)) // 2)
-        for line in wrapped:
+        clipped_wrapped_text = self.wrapped_text[
+            self.start_line : self.start_line + self.term.height - 3
+        ]
+        self._move(y=(self.term.height - len(clipped_wrapped_text)) // 2)
+        for line in clipped_wrapped_text:
             self._move(x=self.margin)
-            echo(line, "\n")
+            echo(line, self.term.clear_eol, "\n")
         echo(self.term.normal)
 
     def _print_prompt(self):
