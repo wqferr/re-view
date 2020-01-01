@@ -95,7 +95,7 @@ class Application:
             self.text = LOREM_GENERATOR.text()
         else:
             self.text = text
-        self.wrapped_text = []
+        self.lines = self.text.split("\n")
 
     def run(self):
         """Start fullscreen application.
@@ -125,15 +125,23 @@ class Application:
             self.error_msg = err.msg
             return self.text
 
+    def _highlight_line(self, line):
+        self.error_msg = ""
+        if not self.regex:
+            return line
+        try:
+            return re.sub(self.regex, self._highlight_match, line, flags=self.flags)
+        except re.error as err:
+            self.error_msg = err.msg
+            return line
+
     def _move_regex_cursor(self, delta):
         self.regex_cursor += delta
         self.regex_cursor = max(0, min(len(self.regex), self.regex_cursor))
 
     def _scroll_screen(self, delta):
         self.start_line += delta
-        self.start_line = max(
-            0, min(len(self.wrapped_text) - self.term.height, self.start_line)
-        )
+        self.start_line = max(0, min(len(self.lines) - self.term.height, self.start_line))
 
     def _add_char(self, char):
         regex_start = self.regex[: self.regex_cursor]
@@ -234,6 +242,25 @@ class Application:
             echo(self.term.move_y(y))
 
     def _print_text(self):
+        lines_on_screen = 0
+        line_buffer = []
+        for line in self.lines[self.start_line :]:
+            line = self._highlight_line(line)
+            wrapped_line = self.term.wrap(
+                line,
+                width=self.term.width - 2 * self.margin,
+                subsequent_indent=self.term.bright_black(">"),
+            )
+            for wrap in wrapped_line:
+                real_line = wrap + self.term.clear_eol + self.term.normal
+                line_buffer.append(real_line)
+                lines_on_screen += 1
+            if lines_on_screen > self.term.height - 3:
+                break
+        self._move(x=0, y=0)
+        echo("\n".join(line_buffer))
+
+    def _print_text_full_old(self):
         highlighted_text = self._get_highlighted_text()
         self.wrapped_text = self.term.wrap(
             highlighted_text,
@@ -268,8 +295,12 @@ class Application:
 
     def _print_flags(self):
         self._move(x=0, y=self.term.height - 3)
-        print("[FLAG]")
-        print(f"Press any of {''.join(VALID_FLAGS)} to toggle flags, or ESC to cancel")
+        echo("[FLAG]", self.term.clear_eol, "\n")
+        echo(
+            f"Press any of {''.join(VALID_FLAGS)} to toggle flags, or ESC to cancel",
+            self.term.clear_eol,
+            "\n",
+        )
         echo(
             f"Current flags: {self._get_active_flags_str()}", self.term.clear_eol,
         )
@@ -324,7 +355,7 @@ def main():
     parser.add_argument(
         "--regex", "-r", dest="initial_regex", default="",
     )
-    parser.add_argument("--flags", "-f", dest="initial_flags", default="M", nargs="?")
+    parser.add_argument("--flags", "-f", dest="initial_flags", default="", nargs="?")
     parser.add_argument(
         "text_file", type=str, nargs="?", default="",
     )

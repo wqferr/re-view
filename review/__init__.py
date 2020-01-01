@@ -1,2 +1,2 @@
 """Terminal based regex visualization tool and debugger."""
-__version__ = "0.13.1"
+__version__ = "0.14.0"
