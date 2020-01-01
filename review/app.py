@@ -29,6 +29,8 @@ Application usage:
     If the input text is too large to fit on screen, you may use the up and down
     arrows to scroll the text.
 
+    If there is a rendering issue, CTRL-L will force a redraw.
+
     You may edit the regex by typing on your keyboard.
     The arrows, home and end keys move the cursor to edit different
     parts of the regex.
@@ -108,6 +110,9 @@ class Application:
                 pass
         print(self.regex)
         print("Flags:", self._get_active_flags_str())
+
+    def _highlight(self, text):
+        return self.term.bold_underline_reverse(text)
 
     def _get_highlighted_text(self):
         self.error_msg = ""
@@ -217,7 +222,10 @@ class Application:
         if not matched_text:
             return matched_text
         else:
-            return self.term.bold_underline_reverse(matched_text)
+            highlighted_chars = (
+                self.term.bold_underline_reverse(c) for c in matched_text
+            )
+            return "".join(highlighted_chars)
 
     def _move(self, x=None, y=None):
         if x is not None:
@@ -230,7 +238,7 @@ class Application:
         self.wrapped_text = self.term.wrap(
             highlighted_text,
             width=self.term.width - 2 * self.margin,
-            subsequent_indent="> ",
+            subsequent_indent=self.term.bright_black(">"),
         )
         clipped_wrapped_text = self.wrapped_text[
             self.start_line : self.start_line + self.term.height - 3
@@ -238,8 +246,7 @@ class Application:
         self._move(y=(self.term.height - len(clipped_wrapped_text)) // 2)
         for line in clipped_wrapped_text:
             self._move(x=self.margin)
-            echo(line, self.term.clear_eol, "\n")
-        echo(self.term.normal)
+            echo(line, self.term.clear_eol, self.term.normal, "\n")
 
     def _print_prompt(self):
         if self.mode == "flag":
