@@ -55,3 +55,5 @@ flag.
 If you enable a flag that is incompatible with any others, these others
 will be disabled and the new one will take place.
 
+To exit the application, send the TERM signal (SIGTERM, CTRL-C) to the
+process. It will send the regex and its flags to stdout.

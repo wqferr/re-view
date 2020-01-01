@@ -43,6 +43,9 @@ Application usage:
 
     If you enable a flag that is incompatible with any others, these others
     will be disabled and the new one will take place.
+
+    To exit the application, send the TERM signal (SIGTERM, CTRL-C) to the
+    process. It will send the regex and its flags to stdout.
 """
 import re
 from argparse import ArgumentParser
@@ -79,14 +82,12 @@ def _get_flag(flag_letter):
 class Application:
     """Fullscreen application."""
 
-    def __init__(self, *, margin=2, initial_regex="", initial_flags=0, text=None):
+    def __init__(self, *, initial_regex="", initial_flags=0, text=None):
         """See doc(Application)."""
         self.term = Terminal()
-        self.margin = margin
         self.regex = initial_regex
         self.regex_cursor = len(self.regex)
         self.start_line = 0
-        self.halt = False
         self.mode = "regex"
         self.show_ctrl_f_prompt = True
         self.flags = initial_flags
@@ -210,8 +211,6 @@ class Application:
             self._scroll_screen(-1)
         elif sequence.name == "KEY_DOWN":
             self._scroll_screen(+1)
-        elif sequence.name == "KEY_ENTER":
-            self.halt = True
         elif sequence.name == "KEY_FIND":
             self.regex_cursor = 0
         elif sequence.name == "KEY_SELECT":
@@ -248,32 +247,21 @@ class Application:
             line = self._highlight_line(line)
             wrapped_line = self.term.wrap(
                 line,
-                width=self.term.width - 2 * self.margin,
+                width=self.term.width,
                 subsequent_indent=self.term.bright_black(">"),
             )
             for wrap in wrapped_line:
                 real_line = wrap + self.term.clear_eol + self.term.normal
                 line_buffer.append(real_line)
                 lines_on_screen += 1
-            if lines_on_screen > self.term.height - 3:
+            if lines_on_screen > self.num_text_display_lines:
                 break
         self._move(x=0, y=0)
         echo("\n".join(line_buffer))
 
-    def _print_text_full_old(self):
-        highlighted_text = self._get_highlighted_text()
-        self.wrapped_text = self.term.wrap(
-            highlighted_text,
-            width=self.term.width - 2 * self.margin,
-            subsequent_indent=self.term.bright_black(">"),
-        )
-        clipped_wrapped_text = self.wrapped_text[
-            self.start_line : self.start_line + self.term.height - 3
-        ]
-        self._move(y=(self.term.height - len(clipped_wrapped_text)) // 2)
-        for line in clipped_wrapped_text:
-            self._move(x=self.margin)
-            echo(line, self.term.clear_eol, self.term.normal, "\n")
+    @property
+    def num_text_display_lines(self):
+        return self.term.height - 3
 
     def _print_prompt(self):
         if self.mode == "flag":
@@ -282,7 +270,7 @@ class Application:
             self._print_regex()
 
     def _print_regex(self):
-        self._move(y=self.term.height - 2)
+        self._move(x=0, y=self.term.height - 2)
         echo(
             self.term.black_on_red(self.error_msg), self.term.clear_eol, "\n",
         )
@@ -315,7 +303,7 @@ class Application:
         echo(self.term.clear)
 
     def _main_loop(self):
-        while not self.halt:
+        while True:
             self._print_text()
             self._print_prompt()
             self._process_key()
