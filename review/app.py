@@ -45,7 +45,7 @@ Application usage:
     will be disabled and the new one will take place.
 
     To exit the application, send SIGTERM (CTRL-C) to the
-    process. It will send the regex and its flags to stdout.
+    process. It will write the regex and its flags to stdout.
 """
 import re
 from argparse import ArgumentParser
