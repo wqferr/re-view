@@ -24,7 +24,7 @@ Application usage:
     The upper half displays text that is highlighted according to the regex typed.
 
     The text displayed in the upper part may be wrapped.
-    Continuation of long lines start with "> ", and do not match ^, even if the
+    Continuation of long lines start with ">", and do not match ^, even if the
     multiline flag is enabled.
     If the input text is too large to fit on screen, you may use the up and down
     arrows to scroll the text.
