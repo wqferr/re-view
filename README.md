@@ -35,7 +35,7 @@ The window is divided into two parts:
 - The upper half displays text that is highlighted according to the regex typed.
 
 The text displayed in the upper part may be wrapped.
-Continuation of long lines start with "> ", and do not match `^`, even if the
+Continuation of long lines start with ">", and do not match `^`, even if the
 multiline flag is enabled.
 If the input text is too large to fit on screen, you may use the up and down
 arrows to scroll the text.
@@ -55,3 +55,5 @@ flag.
 If you enable a flag that is incompatible with any others, these others
 will be disabled and the new one will take place.
 
+To exit the application, send `SIGTERM` (`CTRL-C`) to the
+process. It will write the regex and its flags to stdout.

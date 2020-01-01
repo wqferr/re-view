@@ -24,7 +24,7 @@ Application usage:
     The upper half displays text that is highlighted according to the regex typed.
 
     The text displayed in the upper part may be wrapped.
-    Continuation of long lines start with "> ", and do not match ^, even if the
+    Continuation of long lines start with ">", and do not match ^, even if the
     multiline flag is enabled.
     If the input text is too large to fit on screen, you may use the up and down
     arrows to scroll the text.
@@ -43,6 +43,9 @@ Application usage:
 
     If you enable a flag that is incompatible with any others, these others
     will be disabled and the new one will take place.
+
+    To exit the application, send SIGTERM (CTRL-C) to the
+    process. It will write the regex and its flags to stdout.
 """
 import re
 from argparse import ArgumentParser
@@ -79,14 +82,12 @@ def _get_flag(flag_letter):
 class Application:
     """Fullscreen application."""
 
-    def __init__(self, *, margin=2, initial_regex="", initial_flags=0, text=None):
+    def __init__(self, *, initial_regex="", initial_flags=0, text=None):
         """See doc(Application)."""
         self.term = Terminal()
-        self.margin = margin
         self.regex = initial_regex
         self.regex_cursor = len(self.regex)
         self.start_line = 0
-        self.halt = False
         self.mode = "regex"
         self.show_ctrl_f_prompt = True
         self.flags = initial_flags
@@ -95,7 +96,7 @@ class Application:
             self.text = LOREM_GENERATOR.text()
         else:
             self.text = text
-        self.wrapped_text = []
+        self.lines = self.text.split("\n")
 
     def run(self):
         """Start fullscreen application.
@@ -125,15 +126,23 @@ class Application:
             self.error_msg = err.msg
             return self.text
 
+    def _highlight_line(self, line):
+        self.error_msg = ""
+        if not self.regex:
+            return line
+        try:
+            return re.sub(self.regex, self._highlight_match, line, flags=self.flags)
+        except re.error as err:
+            self.error_msg = err.msg
+            return line
+
     def _move_regex_cursor(self, delta):
         self.regex_cursor += delta
         self.regex_cursor = max(0, min(len(self.regex), self.regex_cursor))
 
     def _scroll_screen(self, delta):
         self.start_line += delta
-        self.start_line = max(
-            0, min(len(self.wrapped_text) - self.term.height, self.start_line)
-        )
+        self.start_line = max(0, min(len(self.lines) - self.term.height, self.start_line))
 
     def _add_char(self, char):
         regex_start = self.regex[: self.regex_cursor]
@@ -202,8 +211,6 @@ class Application:
             self._scroll_screen(-1)
         elif sequence.name == "KEY_DOWN":
             self._scroll_screen(+1)
-        elif sequence.name == "KEY_ENTER":
-            self.halt = True
         elif sequence.name == "KEY_FIND":
             self.regex_cursor = 0
         elif sequence.name == "KEY_SELECT":
@@ -234,19 +241,28 @@ class Application:
             echo(self.term.move_y(y))
 
     def _print_text(self):
-        highlighted_text = self._get_highlighted_text()
-        self.wrapped_text = self.term.wrap(
-            highlighted_text,
-            width=self.term.width - 2 * self.margin,
-            subsequent_indent=self.term.bright_black(">"),
-        )
-        clipped_wrapped_text = self.wrapped_text[
-            self.start_line : self.start_line + self.term.height - 3
-        ]
-        self._move(y=(self.term.height - len(clipped_wrapped_text)) // 2)
-        for line in clipped_wrapped_text:
-            self._move(x=self.margin)
-            echo(line, self.term.clear_eol, self.term.normal, "\n")
+        lines_on_screen = 0
+        line_buffer = []
+        for line in self.lines[self.start_line :]:
+            line = self._highlight_line(line)
+            wrapped_line = self.term.wrap(
+                line,
+                width=self.term.width,
+                subsequent_indent=self.term.bright_black(">"),
+            )
+            for wrap in wrapped_line:
+                real_line = wrap + self.term.clear_eol + self.term.normal
+                line_buffer.append(real_line)
+                lines_on_screen += 1
+            if lines_on_screen > self.num_text_display_lines:
+                break
+        self._move(x=0, y=0)
+        echo("\n".join(line_buffer))
+
+    @property
+    def num_text_display_lines(self):
+        """Get number of lines available to show highlighted text."""
+        return self.term.height - 3
 
     def _print_prompt(self):
         if self.mode == "flag":
@@ -255,7 +271,7 @@ class Application:
             self._print_regex()
 
     def _print_regex(self):
-        self._move(y=self.term.height - 2)
+        self._move(x=0, y=self.num_text_display_lines + 1)
         echo(
             self.term.black_on_red(self.error_msg), self.term.clear_eol, "\n",
         )
@@ -268,8 +284,12 @@ class Application:
 
     def _print_flags(self):
         self._move(x=0, y=self.term.height - 3)
-        print("[FLAG]")
-        print(f"Press any of {''.join(VALID_FLAGS)} to toggle flags, or ESC to cancel")
+        echo("[FLAG]", self.term.clear_eol, "\n")
+        echo(
+            f"Press any of {''.join(VALID_FLAGS)} to toggle flags, or ESC to cancel",
+            self.term.clear_eol,
+            "\n",
+        )
         echo(
             f"Current flags: {self._get_active_flags_str()}", self.term.clear_eol,
         )
@@ -284,7 +304,7 @@ class Application:
         echo(self.term.clear)
 
     def _main_loop(self):
-        while not self.halt:
+        while True:
             self._print_text()
             self._print_prompt()
             self._process_key()
@@ -324,7 +344,7 @@ def main():
     parser.add_argument(
         "--regex", "-r", dest="initial_regex", default="",
     )
-    parser.add_argument("--flags", "-f", dest="initial_flags", default="M", nargs="?")
+    parser.add_argument("--flags", "-f", dest="initial_flags", default="", nargs="?")
     parser.add_argument(
         "text_file", type=str, nargs="?", default="",
     )
