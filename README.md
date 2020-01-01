@@ -40,6 +40,8 @@ multiline flag is enabled.
 If the input text is too large to fit on screen, you may use the up and down
 arrows to scroll the text.
 
+If there is a rendering issue, `CTRL-L` will force a redraw.
+
 You may edit the regex by typing on your keyboard.
 The arrows, home and end keys move the cursor to edit different
 parts of the regex.
