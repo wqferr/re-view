@@ -1,6 +1,34 @@
 RE-view
--------
+=======
 TUI tool to visualize regular expressions in real time.
+
+Screenshots
+-----------
+
+### Simple usage
+Below is a screenshot of a common use case: you have a file with sample text you want
+to validate a regex on, and the application shows you where the typed regex will match.
+![Usage example](https://raw.githubusercontent.com/wqferr/re-view/images-in-docs/.assets/basic.png)
+
+### Regex flags
+You can set or unset any of the flags of the python `re` module, like multiline
+or case-insensitive matching.
+![Regex flags in action](https://raw.githubusercontent.com/wqferr/re-view/images-in-docs/.assets/flags.png)
+
+### Lookahead
+It also accepts lookaheads! In fact, it accepts any feature the `re` module accepts.
+If you don't know what a lookahead (or lookbehind is), don't worry, this is just
+and example of what it *can* do.
+![An example of a lookahead](https://raw.githubusercontent.com/wqferr/re-view/images-in-docs/.assets/lookahead.png)
+
+### Errors
+If there's an error in the regex, it will warn you in bright red.
+![An example of a lookahead](https://raw.githubusercontent.com/wqferr/re-view/images-in-docs/.assets/error.png)
+
+### When you're done editing
+Send `SIGTERM` (`CTRL-C`) to stop the application. It will print out the resulting regex
+and flags that were active.
+![A look at stdout](https://raw.githubusercontent.com/wqferr/re-view/images-in-docs/.assets/stdout.png)
 
 Command line usage
 ------------------
@@ -19,14 +47,6 @@ read from stdin.
 If `INPUT_FILE` is not supplied at all, a randomly generated Lorem-style text
 will be used.
 ```
-
-Screenshots
------------
-Coming `Soon`™.
-
-Python regex reference
-----------------------
-https://docs.python.org/3/library/re.html
 
 Application usage
 -----------------
@@ -57,3 +77,7 @@ will be disabled and the new one will take place.
 
 To exit the application, send `SIGTERM` (`CTRL-C`) to the
 process. It will write the regex and its flags to stdout.
+
+Python regex reference
+----------------------
+https://docs.python.org/3/library/re.html
