@@ -5,7 +5,7 @@ Command line usage:
 
     --help, -h                      show this help message
     --regex REGEX, -r REGEX         set starting regex
-    --flags [FLAGS], -f [FLAGS]     set starting flags, defaults to M
+    --flags [FLAGS], -f [FLAGS]     set starting flags
         If -f or --flags is passed with no arguments, start program with no active
         flags.
 
