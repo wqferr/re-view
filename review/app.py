@@ -91,8 +91,8 @@ class Application:
             {
                 0: self.term.black_on_bright_white_underline,  # whole match
                 1: self.term.black_on_bright_blue_underline,
-                2: self.term.black_on_bright_yellow_underline,
-                3: self.term.bold_black_on_bright_green,
+                2: self.term.black_on_bright_green_underline,
+                3: self.term.bold_black_on_bright_yellow,
                 4: self.term.bold_black_on_bright_red,
             }
         )
