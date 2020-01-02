@@ -188,8 +188,10 @@ class Application:
     def _process_key_regex_mode(self, key):
         if key.is_sequence:
             self._process_sequence_key(key)
-        elif key.isascii:
-            self._process_typed_key(key)
+        else:
+            key = str(key)
+            if key.isascii():
+                self._process_typed_key(key)
 
     def _process_key_flag_mode(self, key):
         if key.is_sequence and key.name == "KEY_ESCAPE":
@@ -229,7 +231,7 @@ class Application:
         elif key == KEY_FLAG_MODE:
             self._enter_flag_mode()
         elif key.isprintable():
-            self._add_char(str(key))
+            self._add_char(key)
 
     def _highlight_match(self, m):
         matched_text = m.group(0)
