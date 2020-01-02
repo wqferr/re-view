@@ -47,7 +47,7 @@ Groups are highlighted as follows:
 This example captures a couple of single letters from words beginning with vowels.
 The empty capture after the first group is to skip color 2 (green).
 
-![Capture groups](https://raw.githubusercontent.com/wqferr/re-view/colored-captures/.assets/captures.png)
+![Capture groups](https://raw.githubusercontent.com/wqferr/re-view/master/.assets/captures.png)
 
 ### Errors
 If there's an error in the regex, it will warn you in bright red.
