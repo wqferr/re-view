@@ -23,6 +23,14 @@ This example matches all words that begin with a vowel, be it upper or lowercase
 
 ![Regex flags in action](https://raw.githubusercontent.com/wqferr/re-view/images-in-docs/.assets/flags.png)
 
+### Errors
+If there's an error in the regex, it will warn you in bright red.
+
+This example shows that no highlights are shown, and a bright red message describing
+the error is shown above the regex.
+
+![An example of a lookahead](https://raw.githubusercontent.com/wqferr/re-view/images-in-docs/.assets/error.png)
+
 ### Lookahead
 It also accepts lookaheads! In fact, it accepts any feature the `re` module accepts.
 If you don't know what a lookahead (or lookbehind is), don't worry, this is just
@@ -32,14 +40,6 @@ This examples matches only words that begin with a vowel (upper or lowercase)
 and that precedes either `.`, `?` or `!`.
 
 ![An example of a lookahead](https://raw.githubusercontent.com/wqferr/re-view/images-in-docs/.assets/lookahead.png)
-
-### Errors
-If there's an error in the regex, it will warn you in bright red.
-
-This example shows that no highlights are shown, and a bright red message describing
-the error is shown above the regex.
-
-![An example of a lookahead](https://raw.githubusercontent.com/wqferr/re-view/images-in-docs/.assets/error.png)
 
 ### When you're done editing
 Send `SIGTERM` (`CTRL-C`) to stop the application. It will print out the resulting regex
