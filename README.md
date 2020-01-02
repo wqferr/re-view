@@ -23,6 +23,29 @@ This example matches all words that begin with a vowel, be it upper or lowercase
 
 ![Regex flags in action](https://raw.githubusercontent.com/wqferr/re-view/master/.assets/flags.png)
 
+### Captures
+You can capture specific parts of the match, and the application will highlight the
+appropriate portion of the text.
+
+For now, only non-named capture groups are available, and only limited to 4 groups
+(not considering group 0, the whole match). Also, for now it is not possible to customize
+colors, but it is a planned feature for you colorblind folk. I tried to select a palette
+that's both (mostly) readable and also compatible with terminals with 16 colors.
+
+Turns out, that's pretty hard! I prioritized the terminal compatibility for now. If you
+wish to skip a group, simply add an empty capture somewhere in the regex. Also, colors
+are grouped in such a way that ones that are similar (as far as I know) have different
+statuses of underline or bold, so that's another way to differentiate them.
+
+Groups are highlighted as follows:
+- 0: (Any non-captured part of match) underlined black-on-white
+- 1: Underlined black-on-blue
+- 2: Underlined black-on-yellow
+- 3: Bold black-on-green
+- 4: Bold black-on-red
+
+![Capture groups](https://raw.githubusercontent.com/wqferr/re-view/colored-captures/.assets/captures.png)
+
 ### Errors
 If there's an error in the regex, it will warn you in bright red.
 
