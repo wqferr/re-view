@@ -293,7 +293,7 @@ class Application:
         echo(self.regex)
         echo("  ", self.term.bright_black(self._get_active_flags_str()))
         if self.show_ctrl_f_prompt:
-            echo(self.term.bright_black(" (press CTRL-F to edit flags)"))
+            echo(self.term.bright_black(" (CTRL-F to edit)"))
         echo(self.term.clear_eol)
         self._move(x=self.regex_cursor)
 
