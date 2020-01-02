@@ -22,6 +22,16 @@ Application usage:
     The window is divided into two parts:
     The lower half displays the current regular expression (regex) being tested.
     The upper half displays text that is highlighted according to the regex typed.
+    Capture groups may be used, and will be highlighted in different colors and
+    decorations as follows:
+
+    - 1st capture group: underlined black-on-blue text
+    - 2nd capture group: underlined black-on-green text
+    - 3rd capture group: bold black-on-yellow text
+    - 4th capture group: bold black-on-red text
+
+    The extra decoration is to make it at least a bit more accessible to people
+    who have difficulty distinguishing the limited palette offered by terminals.
 
     The text displayed in the upper part may be wrapped.
     Continuation of long lines start with ">", and do not match ^, even if the
@@ -49,6 +59,7 @@ Application usage:
 """
 import re
 from argparse import ArgumentParser
+from collections import defaultdict
 from functools import reduce
 from operator import or_ as bitwise_or
 from sys import stdin
@@ -85,6 +96,16 @@ class Application:
     def __init__(self, *, initial_regex="", initial_flags=0, text=None):
         """See doc(Application)."""
         self.term = Terminal()
+        self.capture_colors = defaultdict(lambda: self.term.black_on_bright_white)
+        self.capture_colors.update(
+            {
+                0: self.term.black_on_bright_white_underline,  # whole match
+                1: self.term.black_on_bright_blue_underline,
+                2: self.term.black_on_bright_green_underline,
+                3: self.term.bold_black_on_bright_yellow,
+                4: self.term.bold_black_on_bright_red,
+            }
+        )
         self.regex = initial_regex
         self.regex_cursor = len(self.regex)
         self.start_line = 0
@@ -111,20 +132,6 @@ class Application:
                 pass
         print(self.regex)
         print("Flags:", self._get_active_flags_str())
-
-    def _highlight(self, text):
-        return self.term.bold_underline_reverse(text)
-
-    def _get_highlighted_text(self):
-        self.error_msg = ""
-        if not self.regex:
-            return self.text
-
-        try:
-            return re.sub(self.regex, self._highlight_match, self.text, flags=self.flags)
-        except re.error as err:
-            self.error_msg = err.msg
-            return self.text
 
     def _highlight_line(self, line):
         self.error_msg = ""
@@ -226,13 +233,21 @@ class Application:
 
     def _highlight_match(self, m):
         matched_text = m.group(0)
+        match_start = m.span(0)[0]
         if not matched_text:
             return matched_text
-        else:
-            highlighted_chars = (
-                self.term.bold_underline_reverse(c) for c in matched_text
-            )
-            return "".join(highlighted_chars)
+        char_highlight_funcs = [self.capture_colors[0]] * len(matched_text)
+        for group_idx, capture in enumerate(m.groups()):
+            group_num = group_idx + 1
+            span = m.span(group_num)
+            span = (span[0] - match_start, span[1] - match_start)
+            color = self.capture_colors[group_num]
+            char_highlight_funcs[span[0] : span[1]] = [color] * (span[1] - span[0])
+        highlighted_chars = (f(c) for f, c in zip(char_highlight_funcs, matched_text))
+        # highlighted_chars = (
+        #     self.term.bold_underline_reverse(c) for c in matched_text
+        # )
+        return "".join(highlighted_chars)
 
     def _move(self, x=None, y=None):
         if x is not None:
@@ -369,4 +384,5 @@ def main():
 
 
 if __name__ == "__main__":
+
     main()
