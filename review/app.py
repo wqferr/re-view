@@ -22,6 +22,16 @@ Application usage:
     The window is divided into two parts:
     The lower half displays the current regular expression (regex) being tested.
     The upper half displays text that is highlighted according to the regex typed.
+    Capture groups may be used, and will be highlighted in different colors and
+    decorations as follows:
+
+    - 1st capture group: underlined black-on-blue text
+    - 2nd capture group: underlined black-on-green text
+    - 3rd capture group: bold black-on-yellow text
+    - 4th capture group: bold black-on-red text
+
+    The extra decoration is to make it at least a bit more accessible to people
+    who have difficulty distinguishing the limited palette offered by terminals.
 
     The text displayed in the upper part may be wrapped.
     Continuation of long lines start with ">", and do not match ^, even if the
@@ -374,4 +384,5 @@ def main():
 
 
 if __name__ == "__main__":
+
     main()
